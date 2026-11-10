@@ -207,6 +207,7 @@ export default function App() {
   const [loadingData, setLoadingData] = useState(true);
 
   const [menu, setMenu] = useState<'produk' | 'pelanggan' | 'riwayat'>('produk');
+  const [bukaMenuHp, setBukaMenuHp] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | ProductStatus>('all');
   const [cari, setCari] = useState('');
 
@@ -704,54 +705,111 @@ export default function App() {
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
-        <header className="flex items-center justify-between gap-8 px-6 py-4 bg-white border-b border-slate-200">
-          <a
-            href="#top"
-            className="text-base font-bold text-slate-900 whitespace-nowrap shrink-0"
-          >
-            Admin Toko
-          </a>
+        <header className="bg-white border-b border-slate-200">
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 px-4 sm:px-6 py-3.5">
+            <a
+              href="#top"
+              className="text-base font-bold text-slate-900 whitespace-nowrap shrink-0"
+            >
+              Admin Toko
+            </a>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
-            <a
-              href="#login"
-              onClick={(e) => {
-                e.preventDefault();
-                emailRef.current?.focus();
-              }}
-              className="hover:text-slate-900 whitespace-nowrap shrink-0"
-            >
-              Data Barang
-            </a>
-            <a
-              href="#login"
-              onClick={(e) => {
-                e.preventDefault();
-                emailRef.current?.focus();
-              }}
-              className="hover:text-slate-900 whitespace-nowrap shrink-0"
-            >
-              Akun Pelanggan
-            </a>
-            <a
-              href="#login"
-              onClick={(e) => {
-                e.preventDefault();
-                emailRef.current?.focus();
-              }}
-              className="hover:text-slate-900 whitespace-nowrap shrink-0"
-            >
-              Riwayat Update
-            </a>
-          </nav>
+            <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
+              <a
+                href="#login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  emailRef.current?.focus();
+                }}
+                className="hover:text-slate-900 whitespace-nowrap shrink-0"
+              >
+                Data Barang
+              </a>
+              <a
+                href="#login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  emailRef.current?.focus();
+                }}
+                className="hover:text-slate-900 whitespace-nowrap shrink-0"
+              >
+                Akun Pelanggan
+              </a>
+              <a
+                href="#login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  emailRef.current?.focus();
+                }}
+                className="hover:text-slate-900 whitespace-nowrap shrink-0"
+              >
+                Riwayat Update
+              </a>
+            </nav>
 
-          <button
-            type="button"
-            onClick={() => emailRef.current?.focus()}
-            className="px-4 py-2 text-xs font-medium text-white bg-slate-900 rounded-md hover:bg-slate-800 whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            Login
-          </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => emailRef.current?.focus()}
+                className="px-4 py-2 text-xs font-medium text-white bg-slate-900 rounded-md hover:bg-slate-800 whitespace-nowrap cursor-pointer"
+              >
+                Login
+              </button>
+
+              <button
+                type="button"
+                aria-label="Toggle menu"
+                onClick={() => setBukaMenuHp(!bukaMenuHp)}
+                className="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {bukaMenuHp ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {bukaMenuHp && (
+            <nav className="md:hidden border-t border-slate-200 px-4 py-3 space-y-1 bg-white text-sm text-slate-700">
+              <a
+                href="#login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setBukaMenuHp(false);
+                  emailRef.current?.focus();
+                }}
+                className="block px-3 py-2 rounded-md hover:bg-slate-100"
+              >
+                Data Barang
+              </a>
+              <a
+                href="#login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setBukaMenuHp(false);
+                  emailRef.current?.focus();
+                }}
+                className="block px-3 py-2 rounded-md hover:bg-slate-100"
+              >
+                Akun Pelanggan
+              </a>
+              <a
+                href="#login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setBukaMenuHp(false);
+                  emailRef.current?.focus();
+                }}
+                className="block px-3 py-2 rounded-md hover:bg-slate-100"
+              >
+                Riwayat Update
+              </a>
+            </nav>
+          )}
         </header>
 
         <main className="flex-1 flex items-center justify-center p-6">
@@ -849,57 +907,126 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="flex items-center justify-between gap-8 px-6 py-3.5 bg-white border-b border-slate-200">
-        <span className="text-base font-bold text-slate-900 whitespace-nowrap shrink-0">
-          Admin Toko
-        </span>
+      <header className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 px-4 sm:px-6 py-3.5">
+          <span className="text-base font-bold text-slate-900 whitespace-nowrap shrink-0">
+            Admin Toko
+          </span>
 
-        <nav className="flex items-center gap-6 text-sm font-medium text-slate-600 overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setMenu('produk')}
-            className={`py-1 whitespace-nowrap shrink-0 cursor-pointer ${
-              menu === 'produk' ? 'text-red-600 font-semibold' : 'hover:text-slate-900'
-            }`}
-          >
-            Data Barang ({ringkasan.totalBarang})
-          </button>
-          <button
-            type="button"
-            onClick={() => setMenu('pelanggan')}
-            className={`py-1 whitespace-nowrap shrink-0 cursor-pointer ${
-              menu === 'pelanggan' ? 'text-red-600 font-semibold' : 'hover:text-slate-900'
-            }`}
-          >
-            Akun Pelanggan ({daftarPelanggan.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setMenu('riwayat')}
-            className={`py-1 whitespace-nowrap shrink-0 cursor-pointer ${
-              menu === 'riwayat' ? 'text-red-600 font-semibold' : 'hover:text-slate-900'
-            }`}
-          >
-            Riwayat Update
-          </button>
-        </nav>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+            <button
+              type="button"
+              onClick={() => setMenu('produk')}
+              className={`py-1 whitespace-nowrap shrink-0 cursor-pointer ${
+                menu === 'produk' ? 'text-red-600 font-semibold' : 'hover:text-slate-900'
+              }`}
+            >
+              Data Barang ({ringkasan.totalBarang})
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenu('pelanggan')}
+              className={`py-1 whitespace-nowrap shrink-0 cursor-pointer ${
+                menu === 'pelanggan' ? 'text-red-600 font-semibold' : 'hover:text-slate-900'
+              }`}
+            >
+              Akun Pelanggan ({daftarPelanggan.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenu('riwayat')}
+              className={`py-1 whitespace-nowrap shrink-0 cursor-pointer ${
+                menu === 'riwayat' ? 'text-red-600 font-semibold' : 'hover:text-slate-900'
+              }`}
+            >
+              Riwayat Update
+            </button>
+          </nav>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={bukaModalTambah}
-            className="px-3.5 py-2 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 whitespace-nowrap cursor-pointer"
-          >
-            + Barang Baru
-          </button>
-          <button
-            type="button"
-            onClick={() => signOut(auth)}
-            className="px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 border border-slate-200 rounded-md whitespace-nowrap cursor-pointer"
-          >
-            Keluar
-          </button>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={bukaModalTambah}
+              className="px-3 sm:px-3.5 py-2 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 whitespace-nowrap cursor-pointer"
+            >
+              + Barang Baru
+            </button>
+            <button
+              type="button"
+              onClick={() => signOut(auth)}
+              className="hidden md:inline-flex px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 border border-slate-200 rounded-md whitespace-nowrap cursor-pointer"
+            >
+              Keluar
+            </button>
+            <button
+              type="button"
+              aria-label="Toggle menu"
+              onClick={() => setBukaMenuHp(!bukaMenuHp)}
+              className="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {bukaMenuHp ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {bukaMenuHp && (
+          <nav className="md:hidden border-t border-slate-200 px-4 py-3 space-y-1 bg-white text-sm font-medium text-slate-700">
+            <button
+              type="button"
+              onClick={() => {
+                setMenu('produk');
+                setBukaMenuHp(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-md cursor-pointer ${
+                menu === 'produk' ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-slate-100'
+              }`}
+            >
+              Data Barang ({ringkasan.totalBarang})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMenu('pelanggan');
+                setBukaMenuHp(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-md cursor-pointer ${
+                menu === 'pelanggan' ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-slate-100'
+              }`}
+            >
+              Akun Pelanggan ({daftarPelanggan.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMenu('riwayat');
+                setBukaMenuHp(false);
+              }}
+              className={`w-full text-left px-3 py-2 rounded-md cursor-pointer ${
+                menu === 'riwayat' ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-slate-100'
+              }`}
+            >
+              Riwayat Update
+            </button>
+            <div className="pt-2 mt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setBukaMenuHp(false);
+                  signOut(auth);
+                }}
+                className="w-full text-left px-3 py-2 rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+              >
+                Keluar ({user.email})
+              </button>
+            </div>
+          </nav>
+        )}
       </header>
 
       {notif && (
