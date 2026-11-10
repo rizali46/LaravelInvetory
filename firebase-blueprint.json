@@ -1,0 +1,198 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "An e-commerce inventory product tracking stock levels, unit pricing, SKU, and availability status.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Product display title",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "sku": {
+          "type": "string",
+          "description": "Unique stock keeping unit identifier",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[A-Za-z0-9_\\-]+$"
+        },
+        "category": {
+          "type": "string",
+          "description": "Product merchandising category",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "price": {
+          "type": "number",
+          "description": "Unit retail price in USD"
+        },
+        "stock": {
+          "type": "number",
+          "description": "Current physical units in stock"
+        },
+        "minStock": {
+          "type": "number",
+          "description": "Low-stock alert threshold quantity"
+        },
+        "status": {
+          "type": "string",
+          "description": "Inventory availability state",
+          "enum": ["active", "low_stock", "out_of_stock", "archived"],
+          "maxLength": 20
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the merchant admin who owns this inventory item",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "lastNote": {
+          "type": "string",
+          "description": "Summary note of the most recent stock or price adjustment",
+          "maxLength": 200
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last update timestamp"
+        }
+      },
+      "required": [
+        "name",
+        "sku",
+        "category",
+        "price",
+        "stock",
+        "minStock",
+        "status",
+        "ownerId",
+        "lastNote",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ProductUpdate": {
+      "title": "ProductUpdate",
+      "description": "Immutable audit log entry recording stock adjustments, price changes, new product additions, and edits.",
+      "type": "object",
+      "properties": {
+        "productId": {
+          "type": "string",
+          "description": "ID of the referenced Product document",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productName": {
+          "type": "string",
+          "description": "Snapshot of the product name at time of update",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "sku": {
+          "type": "string",
+          "description": "Snapshot of the product SKU",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[A-Za-z0-9_\\-]+$"
+        },
+        "changeType": {
+          "type": "string",
+          "description": "Type of inventory operation performed",
+          "enum": ["stock_adjustment", "price_update", "new_product", "product_edit"],
+          "maxLength": 30
+        },
+        "previousStock": {
+          "type": "number",
+          "description": "Stock quantity before the change"
+        },
+        "newStock": {
+          "type": "number",
+          "description": "Stock quantity after the change"
+        },
+        "previousPrice": {
+          "type": "number",
+          "description": "Unit price before the change"
+        },
+        "newPrice": {
+          "type": "number",
+          "description": "Unit price after the change"
+        },
+        "note": {
+          "type": "string",
+          "description": "Human-readable description of the update",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the merchant admin who performed the update",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the update"
+        }
+      },
+      "required": [
+        "productId",
+        "productName",
+        "sku",
+        "changeType",
+        "previousStock",
+        "newStock",
+        "previousPrice",
+        "newPrice",
+        "note",
+        "ownerId",
+        "createdAt"
+      ]
+    },
+    "AdminRole": {
+      "title": "AdminRole",
+      "description": "Trusted administrator membership record.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the administrator",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "role": {
+          "type": "string",
+          "description": "Assigned role level",
+          "enum": ["admin"],
+          "maxLength": 20
+        }
+      },
+      "required": ["uid", "role"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Primary e-commerce product inventory collection storing stock, prices, SKUs, and status."
+    },
+    "/product_updates/{updateId}": {
+      "schema": { "$ref": "#/entities/ProductUpdate" },
+      "description": "Immutable ledger of stock adjustments, price updates, new product creations, and catalog edits."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminRole" },
+      "description": "Read-only administrator lookup collection for privilege verification."
+    }
+  }
+}

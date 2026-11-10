@@ -1,0 +1,151 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 4.1: Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Hardened Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerified() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'babybau1010@gmail.com'
+      );
+    }
+
+    // Validation Blueprint: Product
+    function isValidProduct(data) {
+      return data.keys().hasAll([
+          'name', 'sku', 'category', 'price', 'stock', 'minStock',
+          'status', 'ownerId', 'lastNote', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'name', 'sku', 'category', 'price', 'stock', 'minStock',
+          'status', 'ownerId', 'lastNote', 'createdAt', 'updatedAt'
+        ]) &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+        data.sku is string && data.sku.size() >= 1 && data.sku.size() <= 40 && data.sku.matches('^[A-Za-z0-9_\\-]+$') &&
+        data.category is string && data.category.size() >= 1 && data.category.size() <= 60 &&
+        data.price is number && data.price >= 0 && data.price <= 10000000 &&
+        data.stock is int && data.stock >= 0 && data.stock <= 1000000 &&
+        data.minStock is int && data.minStock >= 0 && data.minStock <= 100000 &&
+        data.status is string && data.status.size() >= 1 && data.status.size() <= 20 &&
+        data.status in ['active', 'low_stock', 'out_of_stock', 'archived'] &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+        data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.lastNote is string && data.lastNote.size() <= 200 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: ProductUpdate
+    function isValidProductUpdate(data) {
+      return data.keys().hasAll([
+          'productId', 'productName', 'sku', 'changeType',
+          'previousStock', 'newStock', 'previousPrice', 'newPrice',
+          'note', 'ownerId', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'productId', 'productName', 'sku', 'changeType',
+          'previousStock', 'newStock', 'previousPrice', 'newPrice',
+          'note', 'ownerId', 'createdAt'
+        ]) &&
+        data.productId is string && data.productId.size() >= 1 && data.productId.size() <= 128 &&
+        data.productId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.productName is string && data.productName.size() >= 1 && data.productName.size() <= 120 &&
+        data.sku is string && data.sku.size() >= 1 && data.sku.size() <= 40 &&
+        data.sku.matches('^[A-Za-z0-9_\\-]+$') &&
+        data.changeType is string && data.changeType.size() >= 1 && data.changeType.size() <= 30 &&
+        data.changeType in ['stock_adjustment', 'price_update', 'new_product', 'product_edit'] &&
+        data.previousStock is int && data.previousStock >= 0 && data.previousStock <= 1000000 &&
+        data.newStock is int && data.newStock >= 0 && data.newStock <= 1000000 &&
+        data.previousPrice is number && data.previousPrice >= 0 && data.previousPrice <= 10000000 &&
+        data.newPrice is number && data.newPrice >= 0 && data.newPrice <= 10000000 &&
+        data.note is string && data.note.size() >= 1 && data.note.size() <= 200 &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+        data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.createdAt is timestamp;
+    }
+
+    // Collection: /products/{productId}
+    match /products/{productId} {
+      allow get: if isSignedIn() && isValidId(productId) && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isVerified() &&
+        isValidId(productId) &&
+        isValidProduct(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isVerified() &&
+        isValidId(productId) &&
+        isValidProduct(incoming()) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (existing().status != 'archived' || isAdmin()) &&
+        (
+          isAdmin() ||
+          (existing().ownerId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['stock', 'status', 'lastNote', 'updatedAt'])) ||
+          (existing().ownerId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['price', 'lastNote', 'updatedAt'])) ||
+          (existing().ownerId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'sku', 'category', 'price', 'stock', 'minStock', 'status', 'lastNote', 'updatedAt']))
+        );
+
+      allow delete: if isVerified() &&
+        isValidId(productId) &&
+        (existing().ownerId == request.auth.uid || isAdmin());
+    }
+
+    // Collection: /product_updates/{updateId}
+    match /product_updates/{updateId} {
+      allow get: if isSignedIn() && isValidId(updateId) && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isVerified() &&
+        isValidId(updateId) &&
+        isValidProductUpdate(incoming()) &&
+        incoming().createdAt == request.time &&
+        (
+          exists(/databases/$(database)/documents/products/$(incoming().productId)) ||
+          existsAfter(/databases/$(database)/documents/products/$(incoming().productId))
+        );
+
+      allow update: if false;
+
+      allow delete: if isVerified() &&
+        isValidId(updateId) &&
+        (existing().ownerId == request.auth.uid || isAdmin());
+    }
+
+    // Collection: /admins/{adminId}
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list, create, update, delete: if false;
+    }
+  }
+}
