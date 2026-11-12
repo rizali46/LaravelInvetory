@@ -11,7 +11,8 @@ A clean, responsive personal website built to showcase my recent projects, techn
 ## Local Setup
 
 # Clone the repo
-
+git clone https://github.com/rizali46/LaravelInventory.git
+cd LaravelInventory
 
 # Install dependencies
 npm install
